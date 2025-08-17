@@ -9,11 +9,12 @@ set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_DIR="$PROJECT_DIR/logs"
+RUN_DIR="$PROJECT_DIR/.run"
 LANGGRAPH_PORT="8123"
 UI_DIR="$PROJECT_DIR/deep-agents-ui"
 UI_PORT="5173"
 
-mkdir -p "$LOG_DIR"
+mkdir -p "$LOG_DIR" "$RUN_DIR"
 
 ensure_env() {
   cd "$PROJECT_DIR"
@@ -54,6 +55,7 @@ start_ollama() {
   # Start Ollama in background without waiting for readiness
   echo "Starting Ollama in background... (logs: $LOG_DIR/ollama.log)"
   nohup ollama serve > "$LOG_DIR/ollama.log" 2>&1 &
+  echo $! > "$RUN_DIR/ollama.pid"
 
   # Optional background model pull if explicitly enabled
   if [[ "${OLLAMA_PULL:-}" == "1" ]]; then
@@ -61,6 +63,7 @@ start_ollama() {
     if [[ -n "${model}" ]]; then
       echo "Background pulling Ollama model '${model}'... (logs: $LOG_DIR/ollama-pull.log)"
       nohup ollama pull "${model}" > "$LOG_DIR/ollama-pull.log" 2>&1 &
+      echo $! > "$RUN_DIR/ollama-pull.pid"
     fi
   else
     echo "Skipping model pull. Set OLLAMA_PULL=1 (and optional OLLAMA_MODEL) to pull in background."
@@ -75,6 +78,7 @@ start_langgraph() {
   echo "Starting LangGraph dev server in background on port ${LANGGRAPH_PORT}... (logs: $LOG_DIR/langgraph.log)"
   cd "$PROJECT_DIR"
   nohup langgraph dev --port "${LANGGRAPH_PORT}" > "$LOG_DIR/langgraph.log" 2>&1 &
+  echo $! > "$RUN_DIR/langgraph.pid"
 }
 
 start_ui() {
@@ -117,7 +121,7 @@ start_ui() {
   echo "Starting Deep Agents UI in background on port ${UI_PORT}... (logs: $LOG_DIR/ui.log)"
   (
     cd "$UI_DIR"
-    nohup bash -lc "npm install && npm run dev -- --port '${UI_PORT}'" > "$LOG_DIR/ui.log" 2>&1 &
+    nohup bash -lc "npm install && npm run dev -- --port '${UI_PORT}'" > "$LOG_DIR/ui.log" 2>&1 & echo $! > "$RUN_DIR/ui.pid"
   )
 
   echo "UI should be available at http://localhost:${UI_PORT}"
