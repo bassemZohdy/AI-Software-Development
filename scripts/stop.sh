@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Gracefully stop local services started by run-local-with-ui.sh
 
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)"
 LOG_DIR="$PROJECT_DIR/logs"
 RUN_DIR="$PROJECT_DIR/.run"
 
@@ -21,7 +21,6 @@ kill_pid() {
     if [[ -n "${pid}" ]] && kill -0 "$pid" 2>/dev/null; then
       log "Stopping $name (pid=$pid) ..."
       kill "$pid" 2>/dev/null || true
-      # wait up to 5s
       for _ in {1..5}; do
         if kill -0 "$pid" 2>/dev/null; then sleep 1; else break; fi
       done
@@ -65,22 +64,15 @@ fallback_pkill() {
 main() {
   mkdir -p "$RUN_DIR" "$LOG_DIR"
 
-  # 1) Try PID files first (graceful)
   kill_pid "$RUN_DIR/langgraph.pid" "LangGraph"
   kill_pid "$RUN_DIR/ui.pid" "Deep Agents UI"
-  # Note: We do not stop Ollama here on purpose
 
-  # 2) Ensure ports are freed
   kill_port "$LG_PORT" "LangGraph"
   kill_port "$UI_PORT" "UI"
-  # Do not stop Ollama port
 
-  # 3) Fallback by process names (best-effort)
   fallback_pkill "langgraph dev"
   fallback_pkill "next dev"
-  # Do not kill Ollama here
 
-  # 4) Verify
   status=0
   for port in "$LG_PORT" "$UI_PORT"; do
     if lsof -i tcp:"$port" -sTCP:LISTEN 2>/dev/null | grep -q LISTEN; then
@@ -93,3 +85,4 @@ main() {
 }
 
 main "$@"
+

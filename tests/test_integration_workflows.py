@@ -11,7 +11,7 @@ import sys
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), 'src'))
 
-from main import (
+from src.main import (
     create_software_dev_agent,
     SUPERVISOR_INSTRUCTIONS
 )
@@ -46,7 +46,7 @@ def temp_project_dir():
 class TestAgentWorkflowIntegration:
     """Test complete agent workflow scenarios."""
     
-    @patch('main.create_deep_agent')
+    @patch('src.main.create_deep_agent')
     def test_end_to_end_small_project_workflow(self, mock_create_deep_agent, mock_deep_agent, temp_project_dir):
         """Test complete workflow for small project."""
         mock_create_deep_agent.return_value = mock_deep_agent
@@ -84,7 +84,7 @@ class TestAgentWorkflowIntegration:
         assert all(state["artifacts"][artifact] for artifact in required_artifacts)
 
 
-    @patch('main.create_deep_agent')
+    @patch('src.main.create_deep_agent')
     def test_agent_escalation_workflow(self, mock_create_deep_agent, mock_deep_agent, temp_project_dir):
         """Test escalation handling workflow."""
         mock_create_deep_agent.return_value = mock_deep_agent
@@ -106,7 +106,7 @@ class TestAgentWorkflowIntegration:
             mock_create_deep_agent.assert_called()
 
 
-    @patch('main.create_deep_agent')
+    @patch('src.main.create_deep_agent')
     def test_project_size_scaling_workflow(self, mock_create_deep_agent, mock_deep_agent, temp_project_dir):
         """Test workflow scaling across project sizes."""
         mock_create_deep_agent.return_value = mock_deep_agent
@@ -129,7 +129,7 @@ class TestAgentWorkflowIntegration:
 class TestAgentCollaboration:
     """Test inter-agent collaboration patterns."""
     
-    @patch('main.create_deep_agent')
+    @patch('src.main.create_deep_agent')
     def test_requirements_to_architecture_handoff(self, mock_create_deep_agent, mock_deep_agent):
         """Test handoff from requirements analyst to architecture agent."""
         mock_create_deep_agent.return_value = mock_deep_agent
@@ -146,7 +146,7 @@ class TestAgentCollaboration:
         assert mock_deep_agent.invoke.call_count >= 2
 
 
-    @patch('main.create_deep_agent')
+    @patch('src.main.create_deep_agent')
     def test_architecture_to_development_coordination(self, mock_create_deep_agent, mock_deep_agent):
         """Test coordination from architecture to development agents."""
         mock_create_deep_agent.return_value = mock_deep_agent
@@ -207,7 +207,7 @@ class TestStateManagement:
 class TestErrorHandling:
     """Test error handling and recovery scenarios."""
     
-    @patch('main.create_deep_agent')
+    @patch('src.main.create_deep_agent')
     def test_agent_creation_error_handling(self, mock_create_deep_agent):
         """Test error handling during agent creation."""
         mock_create_deep_agent.side_effect = Exception("Model initialization failed")
@@ -237,7 +237,7 @@ class TestErrorHandling:
 class TestPerformanceScenarios:
     """Test performance-related scenarios."""
     
-    @patch('main.create_deep_agent')
+    @patch('src.main.create_deep_agent')
     def test_large_project_configuration(self, mock_create_deep_agent, mock_deep_agent):
         """Test configuration for large project scenarios."""
         mock_create_deep_agent.return_value = mock_deep_agent
@@ -253,7 +253,7 @@ class TestPerformanceScenarios:
         assert config_call["configurable"]["project_size"] == "large"
 
 
-    @patch('main.create_deep_agent')
+    @patch('src.main.create_deep_agent')
     def test_concurrent_agent_operations(self, mock_create_deep_agent, mock_deep_agent):
         """Test handling of concurrent operations."""
         mock_create_deep_agent.return_value = mock_deep_agent
@@ -277,7 +277,7 @@ class TestPerformanceScenarios:
 class TestSystemIntegration:
     """Full system integration tests."""
     
-    @patch('main.create_deep_agent')
+    @patch('src.main.create_deep_agent')
     def test_complete_development_lifecycle(self, mock_create_deep_agent, mock_deep_agent, temp_project_dir):
         """Test complete development lifecycle."""
         mock_create_deep_agent.return_value = mock_deep_agent

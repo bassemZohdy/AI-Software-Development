@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# A convenience script to run everything locally:
-# 1) Ensure .env exists and has sensible defaults
-# 2) Start Ollama (for local LLMs)
-# 3) Start the LangGraph server for this project
-# 4) Launch the Deep Agents UI and connect to the server
+# Convenience script to run everything locally:
+# 1) Ensure .env exists
+# 2) Start Ollama (optional)
+# 3) Start LangGraph
+# 4) Start the Deep Agents UI
 
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)"
 LOG_DIR="$PROJECT_DIR/logs"
 RUN_DIR="$PROJECT_DIR/.run"
 LANGGRAPH_PORT="8123"
@@ -28,15 +28,7 @@ ensure_env() {
     fi
   fi
 
-  # Ensure defaults exist without overwriting user values
-  ensure_line() {
-    local key="$1"; shift
-    local value="$1"; shift
-    if ! grep -q "^${key}=" .env; then
-      echo "${key}=${value}" >> .env
-    fi
-  }
-
+  ensure_line() { local k="$1" v="$2"; grep -q "^${k}=" .env || echo "${k}=${v}" >> .env; }
   ensure_line LOG_LEVEL "INFO"
   ensure_line OLLAMA_BASE_URL "http://localhost:11434"
   ensure_line OLLAMA_TIMEOUT "60"
@@ -51,13 +43,10 @@ start_ollama() {
     echo "Ollama not found. Install from https://ollama.com/download before continuing."
     return 0
   fi
-
-  # Start Ollama in background without waiting for readiness
   echo "Starting Ollama in background... (logs: $LOG_DIR/ollama.log)"
   nohup ollama serve > "$LOG_DIR/ollama.log" 2>&1 &
   echo $! > "$RUN_DIR/ollama.pid"
 
-  # Optional background model pull if explicitly enabled
   if [[ "${OLLAMA_PULL:-}" == "1" ]]; then
     local model="${OLLAMA_MODEL:-llama3.1}"
     if [[ -n "${model}" ]]; then
@@ -82,7 +71,7 @@ start_langgraph() {
 }
 
 start_ui() {
-  if ! command -v git >/dev/null 2>&1; then
+  if ! command -v git >/dev/null 2>1; then
     echo "git is required to clone the UI repo. Install git and re-run."
     exit 1
   fi
@@ -99,22 +88,11 @@ start_ui() {
     (cd "$UI_DIR" && git pull --ff-only || true)
   fi
 
-  # Ensure UI env matches API config (graph name and server URL)
   echo "Configuring UI environment (.env.local) ..."
   (
     cd "$UI_DIR"
     touch .env.local
-    set_kv() {
-      local key="$1"; shift
-      local val="$1"; shift
-      if grep -q "^${key}=" .env.local; then
-        # Replace existing line
-        sed -i.bak "s#^${key}=.*#${key}=${val}#" .env.local && rm -f .env.local.bak
-      else
-        echo "${key}=${val}" >> .env.local
-      fi
-    }
-    # Next.js expects NEXT_PUBLIC_* to expose variables to the browser
+    set_kv() { local k="$1" v="$2"; if grep -q "^${k}=" .env.local; then sed -i.bak "s#^${k}=.*#${k}=${v}#" .env.local && rm -f .env.local.bak; else echo "${k}=${v}" >> .env.local; fi }
     set_kv NEXT_PUBLIC_DEPLOYMENT_URL "http://127.0.0.1:${LANGGRAPH_PORT}"
     set_kv NEXT_PUBLIC_AGENT_ID "ai-software-development"
   )
@@ -126,7 +104,6 @@ start_ui() {
   )
 
   echo "UI should be available at http://localhost:${UI_PORT}"
-  echo "In the UI, the default server and graph are set via .env.local (VITE_SERVER_URL, VITE_GRAPH_NAME=ai-software-development)."
 }
 
 main() {
@@ -134,12 +111,7 @@ main() {
   start_ollama
   start_langgraph
   start_ui
-
-  echo "\nAll services started in background."
-  echo "- LangGraph server: http://localhost:${LANGGRAPH_PORT} (logs: $LOG_DIR/langgraph.log)"
-  echo "- Deep Agents UI:  http://localhost:${UI_PORT} (logs: $LOG_DIR/ui.log)"
-  echo "- Ollama logs:     $LOG_DIR/ollama.log (and $LOG_DIR/ollama-pull.log if OLLAMA_PULL=1)"
-  echo "Check logs to validate readiness."
 }
 
 main "$@"
+

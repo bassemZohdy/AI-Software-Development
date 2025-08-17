@@ -10,7 +10,7 @@ import os
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), 'src'))
 
-from main import create_software_dev_agent
+from src.main import create_software_dev_agent
 from src.tools.custom_tools import internet_search
 from src.state import SoftwareDevState, get_initial_state
 
@@ -63,7 +63,7 @@ class TestLangChainPatterns:
         assert "blocked_on" in state
 
 
-    @patch('main.create_deep_agent')
+    @patch('src.main.create_deep_agent')
     def test_agent_configuration_patterns(self, mock_create_deep_agent):
         """Test agent follows proper configuration patterns."""
         mock_agent = Mock()
@@ -270,7 +270,7 @@ class TestToolIntegrationPatterns:
 class TestAgentCoordinationPatterns:
     """Test agent coordination best practices."""
     
-    @patch('main.create_deep_agent')
+    @patch('src.main.create_deep_agent')
     def test_subagent_configuration_consistency(self, mock_create_deep_agent):
         """Test subagent configurations are consistent."""
         mock_agent = Mock()
@@ -294,7 +294,7 @@ class TestAgentCoordinationPatterns:
         assert len(names) == len(set(names))
     
     
-    @patch('main.create_deep_agent')
+    @patch('src.main.create_deep_agent')
     def test_tool_access_control(self, mock_create_deep_agent):
         """Test tool access control patterns."""
         mock_agent = Mock()
@@ -323,7 +323,7 @@ class TestAgentCoordinationPatterns:
 class TestPerformancePatterns:
     """Test performance-related patterns."""
     
-    @patch('main.create_deep_agent')
+    @patch('src.main.create_deep_agent')
     def test_configuration_caching(self, mock_create_deep_agent):
         """Test configuration caching patterns."""
         mock_agent = Mock()

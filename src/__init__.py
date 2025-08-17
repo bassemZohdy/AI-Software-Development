@@ -1,4 +1,9 @@
 """
-AI-Software-Development system - A modular, multi-agent system for end-to-end software development.
+AI-Software-Development system package.
+
+This package keeps all source code under `src/` following a standard layout.
+Public APIs are available via submodules such as `src.main`, `src.tools`, and
+`src.utils`.
 """
-from .ai_software_development import *
+
+__all__ = []

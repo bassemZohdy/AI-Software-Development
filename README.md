@@ -26,9 +26,9 @@ pip install -e .[dev,test]
 ```
 
 ## Running
-- Local CLI: `python main.py` (creates the multi-agent system and prints status)
-- LangGraph server: `langgraph dev` (uses `langgraph.json` mapping `ai-software-development` → `./main.py:software_dev_agent`)
-- One-command local setup: `./run-local-with-ui.sh` to start Ollama (if installed), the LangGraph server, and the Deep Agents UI. The script also ensures `.env` exists and sets safe defaults.
+- Local CLI: `python -m src.main` (creates the multi-agent system and prints status)
+- LangGraph server: `langgraph dev` (uses `langgraph.json` mapping `ai-software-development` → `./src/main.py:software_dev_agent`)
+- One-command local setup: `./scripts/run-local-with-ui.sh` to start Ollama (if installed), the LangGraph server, and the Deep Agents UI. The script also ensures `.env` exists and sets safe defaults.
 
 ## Deep Agents UI (Optional)
 Use the web UI to interact with the graph visually.
@@ -44,15 +44,23 @@ Use the web UI to interact with the graph visually.
 ## Project Structure
 ```
 .
-├─ main.py                 # Creates and configures the agent
-├─ langgraph.json          # Graph config for `langgraph dev`
+├─ langgraph.json             # Graph config for `langgraph dev`
+├─ scripts/                   # Local helper scripts
+│  ├─ run-local-with-ui.sh    # Start server + UI (and optionally Ollama)
+│  ├─ restart.sh              # Restart individual services
+│  └─ stop.sh                 # Stop services and free ports
 ├─ src/
-│  ├─ state.py             # State schema and helpers
-│  ├─ callbacks.py         # Callback utilities
-│  ├─ memory.py            # Memory utilities
-│  └─ tools/
-│     └─ custom_tools.py   # internet_search, validate_project_structure, etc.
-└─ tests/                  # Pytest suite (unit + integration)
+│  ├─ main.py                 # Creates and configures the agent (entrypoint)
+│  ├─ state.py                # State schema and helpers (minimal types)
+│  ├─ agents/                 # Agent wrappers built from YAML configs
+│  ├─ tools/
+│  │  └─ custom_tools.py      # internet_search, validate_project_structure, etc.
+│  ├─ resources/              # YAML prompts/configs for agents and supervisor
+│  └─ utils/
+│     ├─ config_loader.py     # YAML loader + prompt helpers
+│     ├─ callbacks.py         # Callback utilities
+│     └─ memory.py            # Memory utilities
+└─ tests/                     # Pytest suite (unit + integration)
 ```
 
 ## Agents & Tools
@@ -75,7 +83,7 @@ pytest --cov . --cov-report=html  # Coverage; open htmlcov/index.html
 
 ## Linting & Formatting
 ```
-black src tests main.py
+black src tests
 isort src tests
 flake8 src tests
 mypy src
@@ -85,6 +93,7 @@ mypy src
 - Missing API key: set `TAVILY_API_KEY` in `.env` for internet search.
 - Validation fails: ensure the required files for your `project_size` exist.
 - UI cannot connect: confirm `langgraph dev` is running and reachable from Deep Agents UI.
+  If you used the helper scripts, logs are in `./logs/`.
 
 ## License
 MIT (see `pyproject.toml`).

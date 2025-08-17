@@ -9,7 +9,7 @@ import os
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), 'src'))
 
-from main import (
+from src.main import (
     create_software_dev_agent,
     get_requirements_analyst_subagent,
     get_architecture_agent_subagent,
@@ -125,7 +125,7 @@ class TestSupervisorInstructions:
 class TestCreateSoftwareDevAgent:
     """Test cases for main agent creation function."""
     
-    @patch('main.create_deep_agent')
+    @patch('src.main.create_deep_agent')
     def test_create_software_dev_agent_default(self, mock_create_deep_agent):
         """Test creating agent with default parameters."""
         mock_agent = Mock()
@@ -159,7 +159,7 @@ class TestCreateSoftwareDevAgent:
         assert config["recursion_limit"] == 1000
         assert config["configurable"]["project_size"] == "small"
     
-    @patch('main.create_deep_agent')
+    @patch('src.main.create_deep_agent')
     def test_create_software_dev_agent_custom_params(self, mock_create_deep_agent):
         """Test creating agent with custom parameters."""
         mock_agent = Mock()
@@ -190,7 +190,7 @@ class TestCreateSoftwareDevAgent:
         with pytest.raises(ValueError, match="Recursion limit must be positive"):
             create_software_dev_agent(recursion_limit=-1)
     
-    @patch('main.create_deep_agent')
+    @patch('src.main.create_deep_agent')
     def test_create_software_dev_agent_creation_failure(self, mock_create_deep_agent):
         """Test handling of agent creation failure."""
         mock_create_deep_agent.side_effect = Exception("Creation failed")
@@ -198,8 +198,8 @@ class TestCreateSoftwareDevAgent:
         with pytest.raises(Exception, match="Creation failed"):
             create_software_dev_agent()
     
-    @patch('main.logger')
-    @patch('main.create_deep_agent')
+    @patch('src.main.logger')
+    @patch('src.main.create_deep_agent')
     def test_create_software_dev_agent_logging(self, mock_create_deep_agent, mock_logger):
         """Test that proper logging occurs during agent creation."""
         mock_agent = Mock()
@@ -221,7 +221,7 @@ class TestCreateSoftwareDevAgent:
 class TestMainIntegration:
     """Integration tests for main module."""
     
-    @patch('main.create_deep_agent')
+    @patch('src.main.create_deep_agent')
     def test_agent_creation_workflow(self, mock_create_deep_agent):
         """Test complete agent creation workflow."""
         mock_agent = Mock()
@@ -236,7 +236,7 @@ class TestMainIntegration:
             config = mock_agent.with_config.call_args[0][0]
             assert config["configurable"]["project_size"] == project_size
     
-    @patch('main.create_deep_agent')
+    @patch('src.main.create_deep_agent')
     def test_subagent_tools_assignment(self, mock_create_deep_agent):
         """Test that sub-agents get correct tool assignments."""
         mock_agent = Mock()

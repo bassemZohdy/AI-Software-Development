@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Restart a specific local service: langgraph | ui
 
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)"
 LOG_DIR="$PROJECT_DIR/logs"
 RUN_DIR="$PROJECT_DIR/.run"
 LANGGRAPH_PORT="8123"
@@ -73,11 +73,9 @@ start_ui() {
     exit 1
   fi
   mkdir -p "$UI_DIR"
-  # Ensure env for UI is set
   (
     cd "$UI_DIR"
     touch .env.local
-    # Next.js public env
     if ! grep -q '^NEXT_PUBLIC_DEPLOYMENT_URL=' .env.local; then
       echo "NEXT_PUBLIC_DEPLOYMENT_URL=http://127.0.0.1:${LANGGRAPH_PORT}" >> .env.local
     fi
