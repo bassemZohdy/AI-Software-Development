@@ -112,6 +112,25 @@ start_ui() {
     (cd "$UI_DIR" && git pull --ff-only || true)
   fi
 
+  # Ensure UI env matches API config (graph name and server URL)
+  echo "Configuring UI environment (.env.local) ..."
+  (
+    cd "$UI_DIR"
+    touch .env.local
+    set_kv() {
+      local key="$1"; shift
+      local val="$1"; shift
+      if grep -q "^${key}=" .env.local; then
+        # Replace existing line
+        sed -i.bak "s#^${key}=.*#${key}=${val}#" .env.local && rm -f .env.local.bak
+      else
+        echo "${key}=${val}" >> .env.local
+      fi
+    }
+    set_kv VITE_SERVER_URL "http://localhost:${LANGGRAPH_PORT}"
+    set_kv VITE_GRAPH_NAME "ai-software-development"
+  )
+
   echo "Installing UI dependencies..."
   (cd "$UI_DIR" && npm install)
 
@@ -119,7 +138,7 @@ start_ui() {
   (cd "$UI_DIR" && nohup npm run dev -- --port "${UI_PORT}" > "$LOG_DIR/ui.log" 2>&1 &)
 
   echo "UI should be available at http://localhost:${UI_PORT}"
-  echo "In the UI, add a server: http://localhost:${LANGGRAPH_PORT} and open graph 'ai-software-development' (alias: 'software-development')."
+  echo "In the UI, the default server and graph are set via .env.local (VITE_SERVER_URL, VITE_GRAPH_NAME=ai-software-development)."
 }
 
 main() {
