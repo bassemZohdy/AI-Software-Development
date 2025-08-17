@@ -64,6 +64,7 @@ logs/
 .langgraph_api/
 temp/
 tmp/
+deep-agents-ui/
 
 # Project specific
 software_dev_agent.log
