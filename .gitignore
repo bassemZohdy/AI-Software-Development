@@ -14,60 +14,51 @@ lib/
 lib64/
 parts/
 sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
 
 # Virtual environments
-.env
-.venv
-env/
-venv/
-ENV/
 env.bak/
 venv.bak/
 
 # Testing
 .tox/
+.nox/
 .coverage
-.pytest_cache/
-htmlcov/
 .coverage.*
+.cache
+nosetests.xml
 coverage.xml
 *.cover
+*.py,cover
 .hypothesis/
-
-# IDEs
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+.pytest_cache/
+htmlcov/
 
 # Logs
 *.log
 logs/
-.run/
 
-# Local development
-.langgraph_api/
-temp/
-tmp/
-deep-agents-ui/
+# Environment
+.env
+.venv/
+env/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
 
 # Project specific
+.run/
+deep-agents-ui/
+.orchestration/
+.langgraph_api/
 software_dev_agent.log
 AGENTS.md
 CLAUDE.md
