@@ -28,6 +28,7 @@ pip install -e .[dev,test]
 ## Running
 - Local CLI: `python main.py` (creates the multi-agent system and prints status)
 - LangGraph server: `langgraph dev` (uses `langgraph.json` mapping `ai-software-development` → `./main.py:software_dev_agent`)
+- One-command local setup: `./run-local-with-ui.sh` to start Ollama (if installed), the LangGraph server, and the Deep Agents UI. The script also ensures `.env` exists and sets safe defaults.
 
 ## Deep Agents UI (Optional)
 Use the web UI to interact with the graph visually.
