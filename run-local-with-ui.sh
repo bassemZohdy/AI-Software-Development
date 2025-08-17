@@ -51,28 +51,19 @@ start_ollama() {
     return 0
   fi
 
-  # Try to detect running server
-  local base_url="$(grep '^OLLAMA_BASE_URL=' .env | cut -d'=' -f2 || echo 'http://localhost:11434')"
-  if curl -sS "${base_url}/api/tags" >/dev/null 2>&1; then
-    echo "Ollama appears to be running at ${base_url}."
-  else
-    echo "Starting Ollama..."
-    nohup ollama serve > "$LOG_DIR/ollama.log" 2>&1 &
-    # Wait briefly for server to start
-    for i in {1..20}; do
-      if curl -sS "${base_url}/api/tags" >/dev/null 2>&1; then
-        echo "Ollama is up at ${base_url}."
-        break
-      fi
-      sleep 1
-    done
-  fi
+  # Start Ollama in background without waiting for readiness
+  echo "Starting Ollama in background... (logs: $LOG_DIR/ollama.log)"
+  nohup ollama serve > "$LOG_DIR/ollama.log" 2>&1 &
 
-  # Optionally pull a model (can be time-consuming). Set OLLAMA_MODEL to skip/change.
-  local model="${OLLAMA_MODEL:-llama3.1}"
-  if [[ -n "${model}" ]]; then
-    echo "Ensuring Ollama model '${model}' is available (this may take a while on first run)..."
-    ollama pull "${model}" || true
+  # Optional background model pull if explicitly enabled
+  if [[ "${OLLAMA_PULL:-}" == "1" ]]; then
+    local model="${OLLAMA_MODEL:-llama3.1}"
+    if [[ -n "${model}" ]]; then
+      echo "Background pulling Ollama model '${model}'... (logs: $LOG_DIR/ollama-pull.log)"
+      nohup ollama pull "${model}" > "$LOG_DIR/ollama-pull.log" 2>&1 &
+    fi
+  else
+    echo "Skipping model pull. Set OLLAMA_PULL=1 (and optional OLLAMA_MODEL) to pull in background."
   fi
 }
 
@@ -81,17 +72,9 @@ start_langgraph() {
     echo "langgraph CLI not found. Install with: pip install langgraph-cli[inmem]"
     exit 1
   fi
-  echo "Starting LangGraph dev server on port ${LANGGRAPH_PORT}..."
+  echo "Starting LangGraph dev server in background on port ${LANGGRAPH_PORT}... (logs: $LOG_DIR/langgraph.log)"
   cd "$PROJECT_DIR"
   nohup langgraph dev --port "${LANGGRAPH_PORT}" > "$LOG_DIR/langgraph.log" 2>&1 &
-  # Wait briefly for server to start
-  for i in {1..20}; do
-    if curl -sS "http://localhost:${LANGGRAPH_PORT}/" >/dev/null 2>&1; then
-      echo "LangGraph server is up at http://localhost:${LANGGRAPH_PORT}"
-      break
-    fi
-    sleep 1
-  done
 }
 
 start_ui() {
@@ -131,11 +114,11 @@ start_ui() {
     set_kv VITE_GRAPH_NAME "ai-software-development"
   )
 
-  echo "Installing UI dependencies..."
-  (cd "$UI_DIR" && npm install)
-
-  echo "Starting Deep Agents UI on port ${UI_PORT}..."
-  (cd "$UI_DIR" && nohup npm run dev -- --port "${UI_PORT}" > "$LOG_DIR/ui.log" 2>&1 &)
+  echo "Starting Deep Agents UI in background on port ${UI_PORT}... (logs: $LOG_DIR/ui.log)"
+  (
+    cd "$UI_DIR"
+    nohup bash -lc "npm install && npm run dev -- --port '${UI_PORT}'" > "$LOG_DIR/ui.log" 2>&1 &
+  )
 
   echo "UI should be available at http://localhost:${UI_PORT}"
   echo "In the UI, the default server and graph are set via .env.local (VITE_SERVER_URL, VITE_GRAPH_NAME=ai-software-development)."
@@ -147,9 +130,11 @@ main() {
   start_langgraph
   start_ui
 
-  echo "\nAll set!"
-  echo "- LangGraph server: http://localhost:${LANGGRAPH_PORT}"
-  echo "- Deep Agents UI:  http://localhost:${UI_PORT}"
+  echo "\nAll services started in background."
+  echo "- LangGraph server: http://localhost:${LANGGRAPH_PORT} (logs: $LOG_DIR/langgraph.log)"
+  echo "- Deep Agents UI:  http://localhost:${UI_PORT} (logs: $LOG_DIR/ui.log)"
+  echo "- Ollama logs:     $LOG_DIR/ollama.log (and $LOG_DIR/ollama-pull.log if OLLAMA_PULL=1)"
+  echo "Check logs to validate readiness."
 }
 
 main "$@"
