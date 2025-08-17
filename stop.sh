@@ -7,15 +7,14 @@ PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_DIR="$PROJECT_DIR/logs"
 RUN_DIR="$PROJECT_DIR/.run"
 
-OL_PORT=11434
 LG_PORT=8123
 UI_PORT=5173
 
 log() { echo "[stop] $*"; }
 
 kill_pid() {
-  local pid_file="$1"; shift
-  local name="$2"; shift
+  local pid_file="${1:-}"; shift || true
+  local name="${2:-unknown}"; shift || true
   if [[ -f "$pid_file" ]]; then
     local pid
     pid="$(cat "$pid_file" 2>/dev/null || echo "")"
@@ -40,8 +39,8 @@ kill_pid() {
 }
 
 kill_port() {
-  local port="$1"; shift
-  local label="$2"; shift
+  local port="${1:-}"; shift || true
+  local label="${2:-unknown}"; shift || true
   local pids
   pids=$(lsof -ti tcp:"$port" -sTCP:LISTEN 2>/dev/null || true)
   if [[ -n "$pids" ]]; then
@@ -69,22 +68,21 @@ main() {
   # 1) Try PID files first (graceful)
   kill_pid "$RUN_DIR/langgraph.pid" "LangGraph"
   kill_pid "$RUN_DIR/ui.pid" "Deep Agents UI"
-  kill_pid "$RUN_DIR/ollama.pid" "Ollama"
-  kill_pid "$RUN_DIR/ollama-pull.pid" "Ollama (pull)"
+  # Note: We do not stop Ollama here on purpose
 
   # 2) Ensure ports are freed
   kill_port "$LG_PORT" "LangGraph"
   kill_port "$UI_PORT" "UI"
-  kill_port "$OL_PORT" "Ollama"
+  # Do not stop Ollama port
 
   # 3) Fallback by process names (best-effort)
   fallback_pkill "langgraph dev"
   fallback_pkill "next dev"
-  fallback_pkill "ollama serve"
+  # Do not kill Ollama here
 
   # 4) Verify
   status=0
-  for port in "$LG_PORT" "$UI_PORT" "$OL_PORT"; do
+  for port in "$LG_PORT" "$UI_PORT"; do
     if lsof -i tcp:"$port" -sTCP:LISTEN 2>/dev/null | grep -q LISTEN; then
       log "Port $port still in use"; status=1
     else
@@ -95,4 +93,3 @@ main() {
 }
 
 main "$@"
-
