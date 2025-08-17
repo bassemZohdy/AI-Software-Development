@@ -119,7 +119,7 @@ start_ui() {
   (cd "$UI_DIR" && nohup npm run dev -- --port "${UI_PORT}" > "$LOG_DIR/ui.log" 2>&1 &)
 
   echo "UI should be available at http://localhost:${UI_PORT}"
-  echo "In the UI, add a server: http://localhost:${LANGGRAPH_PORT} and open graph 'ai-software-development'"
+  echo "In the UI, add a server: http://localhost:${LANGGRAPH_PORT} and open graph 'ai-software-development' (alias: 'software-development')."
 }
 
 main() {
@@ -134,4 +134,3 @@ main() {
 }
 
 main "$@"
-

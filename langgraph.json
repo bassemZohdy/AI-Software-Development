@@ -1,7 +1,8 @@
 {
   "dependencies": ["."],
   "graphs": {
-    "ai-software-development": "./main.py:software_dev_agent"
+    "ai-software-development": "./main.py:software_dev_agent",
+    "software-development": "./main.py:software_dev_agent"
   },
   "env": ".env"
 }
