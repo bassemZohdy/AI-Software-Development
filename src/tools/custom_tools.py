@@ -61,8 +61,11 @@ def validate_project_structure(project_size: str) -> dict:
     """
     required_files = {
         "small": [
-            "README.md", "TODO.md", "adr/0001-architecture.md", 
-            "openapi.yaml", "Dockerfile"
+            "README.md",
+            "TODO.md",
+            "docs/architecture.md",
+            "openapi.yaml",
+            "Dockerfile",
         ],
         "medium": [
             "README.md", "TODO.md", "design/", "services/", 
@@ -79,10 +82,10 @@ def validate_project_structure(project_size: str) -> dict:
     
     expected = required_files[project_size]
     missing = []
-    
-    for file_path in expected:
-        if not os.path.exists(file_path):
-            missing.append(file_path)
+
+    for entry in expected:
+        if not os.path.exists(entry):
+            missing.append(entry)
     
     return {
         "valid": len(missing) == 0,
@@ -126,10 +129,14 @@ def update_orchestration_state(
         except json.JSONDecodeError:
             state = {}
     
-    # Update state
+    # Update state with proper merging
+    existing_artifacts = state.get("artifacts", {})
+    if artifacts:
+        existing_artifacts.update(artifacts)
+    
     state.update({
         "phase": phase,
-        "artifacts": artifacts or state.get("artifacts", {}),
+        "artifacts": existing_artifacts,
         "issues": issues or state.get("issues", []),
         "blocked_on": blocked_on or state.get("blocked_on", [])
     })

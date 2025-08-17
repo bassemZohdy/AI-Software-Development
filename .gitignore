@@ -67,3 +67,5 @@ tmp/
 
 # Project specific
 software_dev_agent.log
+AGENTS.md
+CLAUDE.md

@@ -97,9 +97,9 @@ ARCH: Design authentication service - ADR-001
         with open(filename, 'w') as f:
             f.write(content)
     
-    # Create directories
-    os.makedirs("adr", exist_ok=True)
-    with open("adr/0001-architecture.md", 'w') as f:
-        f.write("# ADR-001: Authentication Architecture\n\nDecision to use OAuth2")
+    # Create architecture document
+    os.makedirs("docs", exist_ok=True)
+    with open("docs/architecture.md", 'w') as f:
+        f.write("# Architecture\n\nHigh-level system architecture and decisions.")
     
     return files
