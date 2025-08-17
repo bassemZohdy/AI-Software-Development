@@ -114,8 +114,9 @@ start_ui() {
         echo "${key}=${val}" >> .env.local
       fi
     }
-    set_kv VITE_SERVER_URL "http://localhost:${LANGGRAPH_PORT}"
-    set_kv VITE_GRAPH_NAME "ai-software-development"
+    # Next.js expects NEXT_PUBLIC_* to expose variables to the browser
+    set_kv NEXT_PUBLIC_DEPLOYMENT_URL "http://127.0.0.1:${LANGGRAPH_PORT}"
+    set_kv NEXT_PUBLIC_AGENT_ID "ai-software-development"
   )
 
   echo "Starting Deep Agents UI in background on port ${UI_PORT}... (logs: $LOG_DIR/ui.log)"
